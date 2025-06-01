@@ -1,0 +1,153 @@
+# Docker Compose 配置文件
+# 用于快速部署pytest-auto-api2测试环境
+
+version: '3.8'
+
+services:
+  # 主测试服务
+  pytest-auto-api2:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: pytest-auto-api2
+    environment:
+      - PROJECT_NAME=pytest-auto-api2
+      - TEST_ENV=Docker环境
+      - TESTER_NAME=自动化测试
+      - HOST=https://www.wanandroid.com
+      - DATA_DRIVER_TYPE=yaml
+      - NOTIFICATION_TYPE=0
+      - MYSQL_SWITCH=false
+      - PYTHONPATH=/app
+    volumes:
+      - ../data:/app/data
+      - ../logs:/app/logs
+      - ../report:/app/report
+      - ../test_case:/app/test_case
+    working_dir: /app
+    command: >
+      sh -c "
+        echo '🚀 启动pytest-auto-api2测试框架...' &&
+        python -m pytest test_case/ -v --alluredir=./report/tmp --tb=short &&
+        echo '📊 生成测试报告...' &&
+        allure generate ./report/tmp -o ./report/html --clean &&
+        echo '✅ 测试完成！'
+      "
+    networks:
+      - test-network
+    depends_on:
+      - mysql
+      - redis
+    restart: unless-stopped
+
+  # MySQL数据库服务（可选）
+  mysql:
+    image: mysql:8.0
+    container_name: pytest-mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456
+      - MYSQL_DATABASE=test
+      - MYSQL_USER=testuser
+      - MYSQL_PASSWORD=testpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - test-network
+    restart: unless-stopped
+
+  # Redis缓存服务（可选）
+  redis:
+    image: redis:7-alpine
+    container_name: pytest-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - test-network
+    restart: unless-stopped
+
+  # Allure报告服务
+  allure-server:
+    image: frankescobar/allure-docker-service
+    container_name: allure-server
+    environment:
+      - CHECK_RESULTS_EVERY_SECONDS=3
+      - KEEP_HISTORY=20
+    ports:
+      - "5050:5050"
+    volumes:
+      - ../report/tmp:/app/allure-results
+      - ../report/history:/app/allure-reports/history
+    networks:
+      - test-network
+    restart: unless-stopped
+
+  # Nginx反向代理（可选）
+  nginx:
+    image: nginx:alpine
+    container_name: pytest-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+      - ../report/html:/usr/share/nginx/html/reports
+    networks:
+      - test-network
+    depends_on:
+      - allure-server
+    restart: unless-stopped
+
+  # 监控服务（可选）
+  prometheus:
+    image: prom/prometheus
+    container_name: pytest-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - test-network
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana
+    container_name: pytest-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources
+    networks:
+      - test-network
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+# 网络配置
+networks:
+  test-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# 数据卷配置
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local

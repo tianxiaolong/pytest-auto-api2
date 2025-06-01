@@ -1,0 +1,141 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Run Module
+
+This module provides run functionality.
+"""
+from utils.read_files_tools.case_automatic_control import TestCaseAutomaticGeneration
+
+"""
+run module
+Provides functionality for run
+"""
+import os
+import sys
+import traceback
+
+import pytest
+
+from utils import config
+from utils.logging_tool.log_control import INFO
+from utils.notify.ding_talk import DingTalkSendMsg
+from utils.notify.lark import FeiShuTalkChatBot
+from utils.notify.send_mail import SendEmail
+from utils.notify.wechat_send import WeChatSend
+from utils.other_tools.allure_data.allure_report_data import AllureFileClean
+from utils.other_tools.models import NotificationType
+
+try:
+    from utils.other_tools.allure_data.error_case_excel import ErrorCaseExcel
+
+    EXCEL_REPORT_AVAILABLE = True
+except ImportError:
+    EXCEL_REPORT_AVAILABLE = False
+    print("警告: Excel 报告功能不可用，xlwings 依赖缺失")
+
+
+def run() -> None:
+    """
+    主运行函数
+
+    执行完整的自动化测试流程，包括：
+    1. 显示项目启动信息
+    2. 执行pytest测试用例
+    3. 生成Allure测试报告
+    4. 发送测试结果通知
+    5. 生成Excel错误报告（可选）
+    6. 异常处理和邮件通知
+
+    支持的通知方式：
+    - 钉钉通知
+    - 企业微信通知
+    - 邮箱通知
+    - 飞书通知
+
+    异常处理：
+    - 自动捕获运行异常
+    - 发送异常邮件通知
+    - 保证程序稳定性
+    """
+    try:
+        INFO.logger.info(
+            """
+                             _    _         _      _____         _
+              __ _ _ __ (_)  / \\  _   _| |_ __|_   _|__  ___| |_
+             / _` | '_ \\| | / _ \\| | | | __/ _ \\| |/ _ \\/ __| __|
+            | (_| | |_) | |/ ___ \\ |_| | || (_) | |  __/\\__ \\ |_
+             \\__,_| .__/|_/_/   \\_\\__,_|\\__\\___/|_|\\___||___/\\__|
+                  |_|
+                  开始执行{}项目...
+                """.format(
+                config.project_name
+            )
+        )
+
+        # 判断现有的测试用例，如果未生成测试代码，则自动生成
+        TestCaseAutomaticGeneration().get_case_automatic()
+
+        pytest.main(
+            [
+                "-s",
+                "-W",
+                "ignore:Module already imported:pytest.PytestWarning",
+                "--alluredir",
+                "./report/tmp",
+                "--clean-alluredir",
+            ]
+        )
+
+        """
+                   --reruns: 失败重跑次数
+                   --count: 重复执行次数
+                   -v: 显示错误位置以及错误的详细信息
+                   -s: 等价于 pytest --capture=no 可以捕获print函数的输出
+                   -q: 简化输出信息
+                   -m: 运行指定标签的测试用例
+                   -x: 一旦错误，则停止运行
+                   --maxfail: 设置最大失败次数，当超出这个阈值时，则不会在执行测试用例
+                    "--reruns=3", "--reruns-delay=2"
+                   """
+
+        os.system(r"allure generate ./report/tmp -o ./report/html --clean")
+
+        allure_data = AllureFileClean().get_case_count()
+        notification_mapping = {
+            NotificationType.DING_TALK.value: DingTalkSendMsg(allure_data).send_ding_notification,
+            NotificationType.WECHAT.value: WeChatSend(allure_data).send_wechat_notification,
+            NotificationType.EMAIL.value: SendEmail(allure_data).send_main,
+            NotificationType.FEI_SHU.value: FeiShuTalkChatBot(allure_data).post,
+        }
+
+        if config.notification_type != NotificationType.DEFAULT.value:
+            notify_type = config.notification_type.split(",")
+            for i in notify_type:
+                # print(notification_mapping)
+                # notification_func = notification_mapping.get(i.lstrip(''))
+                notification_func = notification_mapping.get('2')
+                # print(notification_func)
+                if notification_func is not None:
+                    notification_func()
+                else:
+                    print(f"⚠️  未知的通知类型: {i.lstrip('')}，跳过通知发送")
+
+        if config.excel_report and EXCEL_REPORT_AVAILABLE:
+            ErrorCaseExcel().write_case()
+        elif config.excel_report and not EXCEL_REPORT_AVAILABLE:
+            print("跳过 Excel 报告生成：xlwings 依赖缺失")
+
+        # 程序运行之后，自动启动报告，如果不想启动报告，可注释这段代码
+        os.system("allure serve ./report/tmp -h 127.0.0.1 -p 9999")
+
+    except Exception:
+        # 如有异常，相关异常发送邮件
+        e = traceback.format_exc()
+        send_email = SendEmail(AllureFileClean.get_case_count())
+        # send_email.error_mail(e)
+        raise
+
+
+if __name__ == "__main__":
+    run()

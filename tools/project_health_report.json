@@ -1,0 +1,91 @@
+{
+  "project_structure": {
+    "status": "warning",
+    "missing_dirs": [
+      "common",
+      "data",
+      "test_case",
+      "utils",
+      "logs",
+      "report"
+    ],
+    "missing_files": [
+      "requirements.txt",
+      "pytest.ini",
+      "run.py"
+    ],
+    "score": 10.0
+  },
+  "core_modules": {
+    "status": "warning",
+    "working_modules": [
+      "请求控制模块",
+      "断言控制模块",
+      "缓存控制模块",
+      "日志控制模块",
+      "通知模块-钉钉",
+      "通知模块-微信",
+      "数据库模块",
+      "Excel控制模块",
+      "YAML控制模块",
+      "数据驱动控制"
+    ],
+    "failed_modules": [
+      {
+        "name": "时间工具模块",
+        "error": "module 'utils.times_tool.time_control' has no attribute 'TimeControl'"
+      }
+    ],
+    "score": 90.9090909090909
+  },
+  "data_drivers": {
+    "status": "success",
+    "yaml_driver": {
+      "status": "success",
+      "modules": {
+        "Login": "错误: 在模块 Login 中未找到YAML文件...",
+        "UserInfo": "错误: 在模块 UserInfo 中未找到YAML文件...",
+        "Collect": "错误: 在模块 Collect 中未找到YAML文件..."
+      }
+    },
+    "excel_driver": {
+      "status": "success",
+      "modules": {
+        "Login": "错误: 在模块 Login 中未找到Excel文件...",
+        "UserInfo": "错误: 在模块 UserInfo 中未找到Excel文件...",
+        "Collect": "错误: 在模块 Collect 中未找到Excel文件..."
+      }
+    },
+    "score": 0.0
+  },
+  "config_files": {
+    "status": "warning",
+    "files": {
+      "common/config.yaml": {
+        "status": "missing"
+      },
+      "pytest.ini": {
+        "status": "missing"
+      },
+      "requirements.txt": {
+        "status": "missing"
+      }
+    },
+    "score": 0.0
+  },
+  "dependencies": {
+    "status": "warning",
+    "requirements_file": false,
+    "pip_check": true,
+    "score": 50.0
+  },
+  "test_execution": {
+    "status": "warning",
+    "pytest_available": true,
+    "test_discovery": false,
+    "sample_test": false,
+    "score": 33.33333333333333
+  },
+  "timestamp": "2025-06-01T16:36:53.277705",
+  "project_root": "."
+}

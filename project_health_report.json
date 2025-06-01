@@ -1,0 +1,86 @@
+{
+  "project_structure": {
+    "status": "success",
+    "missing_dirs": [],
+    "missing_files": [],
+    "score": 100.0
+  },
+  "core_modules": {
+    "status": "warning",
+    "working_modules": [
+      "请求控制模块",
+      "断言控制模块",
+      "缓存控制模块",
+      "日志控制模块",
+      "通知模块-钉钉",
+      "通知模块-微信",
+      "数据库模块",
+      "Excel控制模块",
+      "YAML控制模块",
+      "数据驱动控制"
+    ],
+    "failed_modules": [
+      {
+        "name": "时间工具模块",
+        "error": "module 'utils.times_tool.time_control' has no attribute 'TimeControl'"
+      }
+    ],
+    "score": 90.9090909090909
+  },
+  "data_drivers": {
+    "status": "success",
+    "yaml_driver": {
+      "status": "success",
+      "modules": {
+        "Login": 8,
+        "UserInfo": 1,
+        "Collect": 2
+      }
+    },
+    "excel_driver": {
+      "status": "success",
+      "modules": {
+        "Login": 3,
+        "UserInfo": 3,
+        "Collect": 3
+      }
+    },
+    "score": 100.0
+  },
+  "config_files": {
+    "status": "success",
+    "files": {
+      "common/config.yaml": {
+        "status": "success",
+        "size": 2477,
+        "lines": 99
+      },
+      "pytest.ini": {
+        "status": "success",
+        "size": 613,
+        "lines": 25
+      },
+      "requirements.txt": {
+        "status": "success",
+        "size": 1676,
+        "lines": 85
+      }
+    },
+    "score": 100.0
+  },
+  "dependencies": {
+    "status": "success",
+    "requirements_file": true,
+    "pip_check": true,
+    "score": 100.0
+  },
+  "test_execution": {
+    "status": "success",
+    "pytest_available": true,
+    "test_discovery": true,
+    "sample_test": true,
+    "score": 100.0
+  },
+  "timestamp": "2025-06-01T16:38:53.447784",
+  "project_root": "."
+}

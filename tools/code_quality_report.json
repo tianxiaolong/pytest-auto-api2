@@ -1,0 +1,209 @@
+{
+  "summary": {
+    "total_files_checked": 13,
+    "files_with_issues": 13,
+    "total_issues": 81,
+    "issue_types": {
+      "complexity": 18,
+      "docstrings": 19,
+      "line_length": 3,
+      "security": 5,
+      "imports": 36
+    }
+  },
+  "file_results": {
+    "advanced_code_optimizer.py": {
+      "complexity": [
+        "advanced_code_optimizer.py:36: 函数 'organize_imports' 过长 (136 行)，建议拆分"
+      ],
+      "docstrings": [
+        "advanced_code_optimizer.py: 缺少模块文档字符串"
+      ],
+      "line_length": [
+        "advanced_code_optimizer.py:233: 行长度超过 120 字符 (291 字符)",
+        "advanced_code_optimizer.py:237: 行长度超过 120 字符 (289 字符)",
+        "advanced_code_optimizer.py:241: 行长度超过 120 字符 (288 字符)"
+      ],
+      "security": [
+        "advanced_code_optimizer.py:233: 可能包含硬编码的敏感信息",
+        "advanced_code_optimizer.py:237: 可能包含硬编码的敏感信息",
+        "advanced_code_optimizer.py:241: 可能包含硬编码的敏感信息"
+      ]
+    },
+    "auto_code_formatter.py": {
+      "imports": [
+        "auto_code_formatter.py:170: 导入语句应该在文件顶部"
+      ],
+      "complexity": [
+        "auto_code_formatter.py:196: 函数 'create_quality_config' 过长 (57 行)，建议拆分",
+        "auto_code_formatter.py:33: 函数 'fix_file' 过长 (61 行)，建议拆分"
+      ],
+      "docstrings": [
+        "auto_code_formatter.py: 缺少模块文档字符串",
+        "auto_code_formatter.py:22: 函数 '__init__' 缺少文档字符串",
+        "auto_code_formatter.py:64: 函数 'fix_f_string' 缺少文档字符串"
+      ]
+    },
+    "batch_optimizer.py": {
+      "complexity": [
+        "batch_optimizer.py:33: 函数 'fix_import_issues' 过长 (80 行)，建议拆分"
+      ],
+      "docstrings": [
+        "batch_optimizer.py: 缺少模块文档字符串",
+        "batch_optimizer.py:23: 函数 '__init__' 缺少文档字符串"
+      ]
+    },
+    "code_quality_checker.py": {
+      "imports": [
+        "code_quality_checker.py:67: 避免使用通配符导入 (import *)",
+        "code_quality_checker.py:68: 避免使用通配符导入 (import *)",
+        "code_quality_checker.py:348: 导入语句应该在文件顶部"
+      ],
+      "docstrings": [
+        "code_quality_checker.py: 缺少模块文档字符串",
+        "code_quality_checker.py:23: 函数 '__init__' 缺少文档字符串"
+      ],
+      "security": [
+        "code_quality_checker.py: 可能存在SQL注入风险，建议使用参数化查询",
+        "code_quality_checker.py: 使用eval()可能存在安全风险"
+      ]
+    },
+    "data_driver_checker.py": {
+      "imports": [
+        "data_driver_checker.py:59: 导入语句应该在文件顶部",
+        "data_driver_checker.py:109: 导入语句应该在文件顶部",
+        "data_driver_checker.py:160: 导入语句应该在文件顶部",
+        "data_driver_checker.py:161: 导入语句应该在文件顶部",
+        "data_driver_checker.py:209: 导入语句应该在文件顶部",
+        "data_driver_checker.py:319: 导入语句应该在文件顶部",
+        "data_driver_checker.py:329: 导入语句应该在文件顶部"
+      ],
+      "complexity": [
+        "data_driver_checker.py:147: 函数 'check_switch_functionality' 过长 (96 行)，建议拆分",
+        "data_driver_checker.py:245: 函数 'generate_comparison_report' 过长 (57 行)，建议拆分"
+      ],
+      "docstrings": [
+        "data_driver_checker.py: 缺少模块文档字符串"
+      ]
+    },
+    "deep_cleaner.py": {
+      "imports": [
+        "deep_cleaner.py:17: 导入语句应该在文件顶部",
+        "deep_cleaner.py:18: 导入语句应该在文件顶部",
+        "deep_cleaner.py:19: 导入语句应该在文件顶部",
+        "deep_cleaner.py:20: 导入语句应该在文件顶部",
+        "deep_cleaner.py:21: 导入语句应该在文件顶部"
+      ],
+      "docstrings": [
+        "deep_cleaner.py:27: 函数 '__init__' 缺少文档字符串"
+      ]
+    },
+    "project_checker_manager.py": {
+      "imports": [
+        "project_checker_manager.py:22: 导入语句应该在文件顶部",
+        "project_checker_manager.py:23: 导入语句应该在文件顶部",
+        "project_checker_manager.py:24: 导入语句应该在文件顶部",
+        "project_checker_manager.py:28: 导入语句应该在文件顶部",
+        "project_checker_manager.py:29: 导入语句应该在文件顶部",
+        "project_checker_manager.py:30: 导入语句应该在文件顶部",
+        "project_checker_manager.py:248: 导入语句应该在文件顶部"
+      ],
+      "complexity": [
+        "project_checker_manager.py:112: 函数 'generate_comprehensive_report' 过长 (98 行)，建议拆分"
+      ],
+      "docstrings": [
+        "project_checker_manager.py: 缺少模块文档字符串"
+      ]
+    },
+    "project_cleaner.py": {
+      "imports": [
+        "project_cleaner.py:404: 导入语句应该在文件顶部"
+      ],
+      "complexity": [
+        "project_cleaner.py:23: 函数 '__init__' 过长 (79 行)，建议拆分"
+      ],
+      "docstrings": [
+        "project_cleaner.py: 缺少模块文档字符串",
+        "project_cleaner.py:23: 函数 '__init__' 缺少文档字符串"
+      ]
+    },
+    "project_health_checker.py": {
+      "imports": [
+        "project_health_checker.py:168: 导入语句应该在文件顶部",
+        "project_health_checker.py:335: 导入语句应该在文件顶部",
+        "project_health_checker.py:459: 导入语句应该在文件顶部",
+        "project_health_checker.py:469: 导入语句应该在文件顶部"
+      ],
+      "complexity": [
+        "project_health_checker.py:155: 函数 'check_data_drivers' 过长 (66 行)，建议拆分",
+        "project_health_checker.py:223: 函数 'check_config_files' 过长 (51 行)，建议拆分",
+        "project_health_checker.py:321: 函数 'check_test_execution' 过长 (64 行)，建议拆分",
+        "project_health_checker.py:387: 函数 'generate_summary_report' 过长 (65 行)，建议拆分"
+      ],
+      "docstrings": [
+        "project_health_checker.py: 缺少模块文档字符串"
+      ]
+    },
+    "project_structure_analyzer.py": {
+      "complexity": [
+        "project_structure_analyzer.py:156: 函数 'generate_tree_view' 过长 (54 行)，建议拆分",
+        "project_structure_analyzer.py:243: 函数 'save_structure_report' 过长 (104 行)，建议拆分"
+      ],
+      "docstrings": [
+        "project_structure_analyzer.py: 缺少模块文档字符串",
+        "project_structure_analyzer.py:21: 函数 '__init__' 缺少文档字符串"
+      ]
+    },
+    "run_checks.py": {
+      "imports": [
+        "run_checks.py:18: 导入语句应该在文件顶部"
+      ],
+      "docstrings": [
+        "run_checks.py: 缺少模块文档字符串"
+      ]
+    },
+    "smart_quality_checker.py": {
+      "imports": [
+        "smart_quality_checker.py:24: 导入语句应该在文件顶部",
+        "smart_quality_checker.py:37: 导入语句应该在文件顶部",
+        "smart_quality_checker.py:49: 导入语句应该在文件顶部"
+      ],
+      "complexity": [
+        "smart_quality_checker.py:44: 函数 'run_custom_check' 过长 (74 行)，建议拆分"
+      ],
+      "docstrings": [
+        "smart_quality_checker.py: 缺少模块文档字符串"
+      ]
+    },
+    "test_execution_checker.py": {
+      "imports": [
+        "test_execution_checker.py:228: 导入语句应该在文件顶部",
+        "test_execution_checker.py:269: 导入语句应该在文件顶部",
+        "test_execution_checker.py:378: 导入语句应该在文件顶部",
+        "test_execution_checker.py:388: 导入语句应该在文件顶部"
+      ],
+      "complexity": [
+        "test_execution_checker.py:89: 函数 'check_test_collection' 过长 (59 行)，建议拆分",
+        "test_execution_checker.py:150: 函数 'check_sample_execution' 过长 (63 行)，建议拆分",
+        "test_execution_checker.py:297: 函数 'generate_execution_report' 过长 (63 行)，建议拆分"
+      ],
+      "docstrings": [
+        "test_execution_checker.py: 缺少模块文档字符串"
+      ]
+    }
+  },
+  "suggestions": [
+    "📊 发现 81 个问题，建议优化：",
+    "🔒 修复安全问题（高优先级）",
+    "📝 添加缺失的文档字符串",
+    "🔄 重构复杂函数",
+    "📏 调整过长的代码行",
+    "📦 优化导入语句",
+    "",
+    "💡 推荐工具:",
+    "   - 使用 black 进行代码格式化",
+    "   - 使用 isort 整理导入语句",
+    "   - 使用 mypy 进行类型检查",
+    "   - 配置 pre-commit 钩子自动检查"
+  ]
+}
