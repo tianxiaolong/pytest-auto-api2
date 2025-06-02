@@ -390,221 +390,51 @@ class SMSSender:
         return proxy
 
     def get_rpc_qm(self, data: str) -> str:
-        """调用RPC获取qm参数"""
+        """调用RPC获取qm参数 - 按照易语言逻辑"""
         try:
-            # 尝试多个RPC端口 (8080-8089)
-            ports = [8080, 8081, 8082, 8083, 8084, 8085, 8086, 8087, 8088, 8089]
+            # 只使用8080端口，按照易语言逻辑
+            rpc_url = "http://127.0.0.1:8080/get"
+            params = {"data": data}
+            response = requests.get(rpc_url, params=params, timeout=10)
 
-            for port in ports:
-                try:
-                    rpc_url = f"http://127.0.0.1:{port}/get"
-                    # 简化RPC调用，只传data参数（手机号）
-                    params = {"data": data}
-                    response = requests.get(rpc_url, params=params, timeout=5)
-
-                    if response.status_code == 200:
-                        result = response.json()
-                        if result.get("success"):
-                            # 尝试多个可能的字段名
-                            qm_value = (result.get("qm") or
-                                      result.get("item_retval") or
-                                      result.get("result") or
-                                      result.get("data"))
-
-                            if qm_value and not str(qm_value).startswith("ERROR"):
-                                return str(qm_value)
-
-                except requests.exceptions.ConnectionError:
-                    continue
-                except Exception as e:
-                    continue
-
-            self.log("所有RPC端口都不可用", "ERROR")
-            return ""
+            if response.status_code == 200:
+                response_text = response.text
+                # 按照易语言逻辑：工具_取文本中间_A (qm, "item_retval")
+                import re
+                match = re.search(r'"item_retval"\s*:\s*"([^"]*)"', response_text)
+                if match:
+                    qm = match.group(1)
+                    self.log(f"获取qm参数成功: {qm[:20]}...")
+                    return qm
+                else:
+                    self.log("未找到item_retval字段", "ERROR")
+                    return ""
+            else:
+                self.log(f"RPC调用失败: HTTP {response.status_code}", "ERROR")
+                return ""
 
         except Exception as e:
             self.log(f"RPC调用异常: {e}", "ERROR")
             return ""
 
-    def get_rpc_qm_with_hex(self, hex_data: str, device_id: str) -> str:
-        """使用十六进制数据和device_id调用RPC - 完全模拟易语言"""
-        try:
-            # 尝试多个RPC端口 (8080-8089)
-            ports = [8080, 8081, 8082, 8083, 8084, 8085, 8086, 8087, 8088, 8089]
 
-            for port in ports:
-                try:
-                    rpc_url = f"http://127.0.0.1:{port}/get"
-                    # 完全按照易语言格式：data=十六进制&device_id=emulator-xxxx
-                    params = {
-                        "data": hex_data,
-                        "device_id": device_id
-                    }
-
-                    # 设置请求头，模拟易语言的User-Agent
-                    headers = {
-                        "Accept": "text/html, application/xhtml+xml, */*",
-                        "Accept-Encoding": "identity",
-                        "Accept-Language": "zh-cn",
-                        "Cache-Control": "no-cache",
-                        "Connection": "Keep-Alive",
-                        "User-Agent": "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; Trident/5.0)"
-                    }
-
-                    response = requests.get(rpc_url, params=params, headers=headers, timeout=5)
-
-                    if response.status_code == 200:
-                        result = response.json()
-                        if result.get("success"):
-                            # 尝试多个可能的字段名
-                            qm_value = (result.get("qm") or
-                                      result.get("item_retval") or
-                                      result.get("result") or
-                                      result.get("data"))
-
-                            if qm_value and not str(qm_value).startswith("ERROR"):
-                                self.log(f"RPC端口{port}获取qm成功 (hex: {hex_data[:20]}..., device: {device_id})")
-                                return str(qm_value)
-
-                except requests.exceptions.ConnectionError:
-                    continue
-                except Exception as e:
-                    continue
-
-            self.log("所有RPC端口都不可用", "ERROR")
-            return ""
-
-        except Exception as e:
-            self.log(f"RPC调用异常: {e}", "ERROR")
-            return ""
-
-    def get_rpc_qm_with_hex_and_proxy(self, hex_data: str, device_id: str, proxy: str = None) -> str:
-        """使用十六进制数据、device_id和代理调用RPC - 关键修复！"""
-        try:
-            # 尝试多个RPC端口 (8080-8089)
-            ports = [8080, 8081, 8082, 8083, 8084, 8085, 8086, 8087, 8088, 8089]
-
-            # 设置代理
-            proxies = None
-            if proxy:
-                proxies = {
-                    "http": f"http://{proxy}",
-                    "https": f"http://{proxy}"
-                }
-
-            for port in ports:
-                try:
-                    rpc_url = f"http://127.0.0.1:{port}/get"
-                    # 完全按照易语言格式：data=十六进制&device_id=emulator-xxxx
-                    params = {
-                        "data": hex_data,
-                        "device_id": device_id
-                    }
-
-                    # 设置请求头，模拟易语言的User-Agent
-                    headers = {
-                        "Accept": "text/html, application/xhtml+xml, */*",
-                        "Accept-Encoding": "identity",
-                        "Accept-Language": "zh-cn",
-                        "Cache-Control": "no-cache",
-                        "Connection": "Keep-Alive",
-                        "User-Agent": "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; Trident/5.0)"
-                    }
-
-                    # 关键：RPC调用也使用代理！
-                    response = requests.get(rpc_url, params=params, headers=headers, proxies=proxies, timeout=5)
-
-                    if response.status_code == 200:
-                        result = response.json()
-                        if result.get("success"):
-                            # 尝试多个可能的字段名
-                            qm_value = (result.get("qm") or
-                                      result.get("item_retval") or
-                                      result.get("result") or
-                                      result.get("data"))
-
-                            if qm_value and not str(qm_value).startswith("ERROR"):
-                                self.log(f"RPC端口{port}获取qm成功 (使用代理: {proxy or '无'})")
-                                return str(qm_value)
-
-                except requests.exceptions.ConnectionError:
-                    continue
-                except Exception as e:
-                    continue
-
-            self.log("所有RPC端口都不可用", "ERROR")
-            return ""
-
-        except Exception as e:
-            self.log(f"RPC调用异常: {e}", "ERROR")
-            return ""
 
     def generate_device_params(self) -> Dict[str, Any]:
-        """生成设备参数 - 按照成功请求包格式"""
-        # 使用成功包中的设备型号
-        device_models = ["V2307A"]  # 成功包使用的型号
-
+        """生成设备参数 - 按照易语言格式"""
         timestamp = int(time.time() * 1000)
         device_id = str(uuid.uuid4())
 
-        # 生成类似成功包的utdid格式
-        utdid = ''.join(random.choices('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/', k=24))
-
-        # 使用固定的Ts格式（类似成功包的SZkjFw）
-        ts_suffixes = ["SZkjFw", "TZkjGx", "UZkjHy", "VZkjIz", "WZkjJa"]  # 类似成功包的格式
-        ts_suffix = random.choice(ts_suffixes)
-
-        # 生成RpcId（成功包使用25，我们用接近的值）
-        rpc_id = random.randint(20, 30)
-
-        # 生成hx中的随机数（成功包使用989，我们用接近的值）
-        hx_random = random.randint(980, 999)
+        # 生成随机数字字符串
+        def random_digits(length):
+            return ''.join([str(random.randint(0, 9)) for _ in range(length)])
 
         return {
             "timestamp": timestamp,
-            "device_model": random.choice(device_models),
             "device_id": device_id,
-            "utdid": utdid,
-            "rpc_id": rpc_id,
-            "hx_random": hx_random,
-            "ts_suffix": ts_suffix,
+            "random_5": random_digits(5),
+            "random_4": random_digits(4),
+            "random_3": random_digits(3)
         }
-
-    def generate_hex_data(self, phone: str, device_params: Dict[str, Any]) -> str:
-        """生成RPC调用需要的十六进制数据 - 尝试模拟易语言算法"""
-        import hashlib
-        import secrets
-
-        # 方法1：尝试不同的组合方式
-        combinations = [
-            phone,  # 只用手机号
-            f"{phone}{device_params['timestamp']}",  # 手机号+时间戳
-            f"{phone}_{device_params['timestamp']}",  # 手机号_时间戳
-            f"{phone}{device_params['device_id']}",  # 手机号+设备ID
-            f"{device_params['timestamp']}{phone}",  # 时间戳+手机号
-            f"{device_params['device_id']}{phone}",  # 设备ID+手机号
-        ]
-
-        # 方法2：尝试不同的哈希算法
-        hex_data = ""
-        for combo in combinations:
-            # SHA256
-            sha256_hash = hashlib.sha256(combo.encode('utf-8')).hexdigest()[:64]
-            # MD5 + 扩展（备用方案）
-            # md5_hash = hashlib.md5(combo.encode('utf-8')).hexdigest()
-            # md5_extended = (md5_hash * 2)[:64]  # MD5重复到64位
-
-            # 如果找到匹配的模式，使用它
-            # 目前先使用SHA256作为默认
-            hex_data = sha256_hash
-            break
-
-        # 如果以上都不行，生成随机的64位十六进制（用于测试）
-        if not hex_data or len(hex_data) != 64:
-            hex_data = secrets.token_hex(32)  # 生成64位随机十六进制
-
-        self.log(f"生成十六进制数据: {hex_data}")
-        return hex_data
 
     def generate_sign(self, params: Dict[str, Any]) -> str:
         """生成签名 (简化版本)"""
@@ -614,102 +444,73 @@ class SMSSender:
         return hashlib.md5(sign_data.encode()).hexdigest()
 
     def send_sms_request(self, phone: str, proxy: str = None, retry_count: int = 3) -> Dict[str, Any]:
-        """发送短信请求"""
+        """发送短信请求 - 按照易语言成功逻辑"""
         last_error = None
 
         for attempt in range(retry_count):
             try:
-                # 每次请求都重新生成设备参数，确保唯一性
+                # 生成参数 - 按照易语言格式
                 device_params = self.generate_device_params()
+                timestamp = str(device_params['timestamp'])
+                uuid_val = str(uuid.uuid4())
+                did = f"TEMP-aCH3p4Iqpv0DAPeOErH{device_params['random_5']}"
+                token_a = f"F6AUPS8llZHQp+g1fDszSTW55Z8G1akeLt9sZu7viIlkRLDElg{device_params['random_4']}=="
+                color = f"AQAA_knzZitdh4roJC1h2IcPiHQkTSx2H5Ef9knLrJkjX7aZmcFEeJMzFx1Yy6pHXZvNZps8eBHfwu8ND{device_params['random_4']}0HtTBg=="
+                uuid1 = str(uuid.uuid4())
+                hx = f"{timestamp},{uuid1},178"
+                token = f"F6AUPS8llZHQp+g1fDszSTW55Z8G1akeLt9sZu7viIlkRL{device_params['random_4']}EAAA=="
+                ts = f"PR89{device_params['random_3']}"
+                jt_mix_ts = str(device_params['timestamp'])
 
-                # 每次请求都重新获取qm参数，确保时效性
-                hex_data = self.generate_hex_data(phone, device_params)
-                device_id = f"emulator-{random.randint(5556, 5570)}"  # 动态生成device_id
+                # 构建sha256数据 - 按照易语言格式
+                sha256_str = f'{{"bizType":"login","fansId":"","jtMixAuthCode":"","jtMixTs":"{jt_mix_ts}","jtMixUnique":"{uuid_val}","phoneNumber":"{phone}"}}{hx}'
+                sha256_hash = hashlib.sha256(sha256_str.encode()).hexdigest()
 
-                # 关键：每次都重新获取qm，确保时效性
-                qm = self.get_rpc_qm_with_hex(hex_data, device_id)
+                # 获取qm参数
+                qm = self.get_rpc_qm(sha256_hash)
                 if not qm:
-                    self.log(f"第{attempt+1}次获取qm失败，重试...")
-                    time.sleep(0.5)  # 短暂等待后重试
-                    continue
+                    return {"success": False, "error": "获取qm参数失败"}
 
-                self.log(f"第{attempt+1}次获取到qm参数: {qm[:20]}...")
+                self.log(f"获取到qm参数: {qm[:20]}...")
 
-                # 立即发送请求，减少qm失效风险
+                # 构建请求数据 - 按照易语言格式
+                request_data = f'[{{"bizType":"login","fansId":"","jtMixAuthCode":"","jtMixTs":"{jt_mix_ts}","jtMixUnique":"{uuid_val}","phoneNumber":"{phone}"}}]'
 
-                # 构建请求头 - 完全按照成功请求包格式
-                # 尝试多种签名算法（基于成功包分析）
-                sign_combinations = [
-                    f"{phone}{jt_mix_ts}",  # phone + jtMixTs
-                    f"{phone}{device_params['timestamp']}",  # phone + timestamp
-                    f"{jt_mix_ts}{phone}",  # jtMixTs + phone
-                    f"{device_params['timestamp']}{phone}",  # timestamp + phone
-                    f"{phone}{jt_mix_unique}",  # phone + jtMixUnique
-                    f"{jt_mix_unique}{phone}",  # jtMixUnique + phone
-                    f"{phone}login{jt_mix_ts}",  # phone + "login" + jtMixTs
-                    f"login{phone}{jt_mix_ts}",  # "login" + phone + jtMixTs
-                    phone,  # 只有phone
-                    str(jt_mix_ts),  # 只有jtMixTs
-                ]
-
-                # 使用第一个组合作为默认（最可能的组合）
-                sign_data = sign_combinations[0]  # phone + jtMixTs
-                sign = hashlib.md5(sign_data.encode()).hexdigest()
-
+                # 构建请求头 - 按照易语言顺序
                 headers = {
-                    "Accept-Encoding": "gzip",  # 成功包使用gzip
                     "Accept-Language": "zh-Hans",
                     "AppId": "ALIPUB059F038311550",
                     "Connection": "Keep-Alive",
                     "Content-Type": "application/json",
-                    "Cookie": "",  # 成功包有这个字段
-                    "Did": f"TEMP-{device_params['utdid']}",
+                    "Did": did,
                     "Host": "mgs-normal.antfans.com",
                     "Operation-Type": "com.antgroup.antchain.mymobileprod.service.user.requestSmsCodeWithoutLogin",
                     "Platform": "ANDROID",
                     "Retryable2": "0",
-                    "RpcId": str(device_params['rpc_id']),
-                    "Sign": sign,  # 成功包有签名
-                    "TRACEID": f"TEMP-{device_params['utdid']}P{device_params['ts_suffix']}_{device_params['rpc_id']}",
-                    "Ts": f"P{device_params['ts_suffix']}",  # 成功包格式
+                    "RpcId": "46",
+                    "TRACEID": f"{did}{ts}_46",
+                    "Ts": ts,
                     "User-Agent": "Android_Ant_Client",
                     "Version": "2",
                     "WorkspaceId": "prod",
-                    "hx": f"{device_params['timestamp']},{device_params['device_id']},{device_params['hx_random']}",  # 小写
-                    "productId": "ALIPUB059F038311550_ANDROID",  # 小写
-                    "productVersion": "1.8.5.241219194812",  # 小写
-                    "qm": qm,  # 小写，关键字段
-                    "signType": "0",  # 小写
-                    "x-68687967-version": "25.5.4.0",  # 成功包的版本号
+                    "hx": hx,
+                    "productId": "ALIPUB059F038311550_ANDROID",
+                    "productVersion": "1.8.5.241219194812",
+                    "qm": qm,
+                    "signType": "0",
+                    "x-68687967-version": "25.5.1.1",
                     "x-app-sys-Id": "com.antfans.fans",
-                    "x-device-ap-token": f"sgOuVRk74SxYu03Sb/NoCi9DfB/FLn+mdjh6tVA2TFxIZMQilwEAAA==",  # 成功包格式
-                    "x-device-color": f"AQAA_b83MA2M3HmwDumx98MBHQIyzsaOa3WxHwfYdDAAar86cKWhZVc2OLOSYZvmFbveTIEVFDCQLeEv/57peRNmcgw==",  # 成功包格式
-                    "x-device-model": device_params['device_model'],
-                    "x-device-timestamp": str(device_params['timestamp']),
-                    "x-device-token": f"w7/d9QtFdqKMffE3/QrXvzr0+bviDkmhQ7jp/V6wuZQkg8QilwEAAA==",  # 成功包格式
-                    "x-device-utdid": device_params['utdid'],
-                    "x-fans-utdid": "009&51bf494dqo2BPtbf+xwrdl99b3LGaw==",  # 成功包的值
+                    "x-device-ap-token": token_a,
+                    "x-device-color": color,
+                    "x-device-model": "SM-G9730",
+                    "x-device-timestamp": timestamp,
+                    "x-device-token": token,
+                    "x-device-utdid": did.replace("TEMP-", ""),
+                    "x-fans-utdid": "009&51bfbf30oYzlHRVqQfMeKOoHhYe1bQ==",
                     "x-fans-version": "2.40.0",
                     "x-platform": "Android",
                     "x-source": "fans"
                 }
-
-                # 构建请求体 - 精确按照成功包格式
-                # 注意：成功包中jtMixTs比timestamp小8ms
-                jt_mix_ts = device_params['timestamp'] - 8
-                jt_mix_unique = str(uuid.uuid4())
-
-                payload = [{
-                    "bizType": "login",
-                    "fansId": "",
-                    "jtMixAuthCode": "",
-                    "jtMixTs": str(jt_mix_ts),
-                    "jtMixUnique": jt_mix_unique,
-                    "phoneNumber": phone
-                }]
-
-                # 确保JSON格式与易语言一致（无空格，紧凑格式）
-                payload_json = json.dumps(payload, separators=(',', ':'), ensure_ascii=False)
 
                 # 设置代理
                 proxies = None
@@ -721,99 +522,44 @@ class SMSSender:
 
                 # 发送请求
                 url = "https://mgs-normal.antfans.com/mgw.htm"
-
-                # 添加Content-Length到请求头（确保与易语言一致）
-                headers["Content-Length"] = str(len(payload_json.encode('utf-8')))
-
-                # 调试：输出请求详情
-                self.log(f"请求URL: {url}")
-                self.log(f"Content-Length: {headers['Content-Length']}")
-                self.log(f"设备型号: {device_params['device_model']}")
-                self.log(f"RpcId: {device_params['rpc_id']}")
-                self.log(f"签名: {sign}")
-                self.log(f"qm参数: {qm[:30]}...")
-                self.log(f"签名数据: {sign_data}")
-                self.log(f"请求体: {payload_json}")
-
-                # 输出关键请求头用于对比
-                key_headers = ["qm", "hx", "Sign", "x-device-model", "x-68687967-version"]
-                for key in key_headers:
-                    if key in headers:
-                        self.log(f"{key}: {headers[key]}")
+                self.log(f"发送短信请求到: {phone}")
 
                 response = requests.post(
                     url,
+                    data=request_data,  # 使用data而不是json
                     headers=headers,
-                    data=payload_json,  # 使用data而不是json，确保格式完全一致
                     proxies=proxies,
-                    timeout=15,
-                    verify=False  # 忽略SSL证书验证
+                    timeout=30
                 )
 
-                response.raise_for_status()
-                result = response.json()
-
-                # 调试：输出响应详情
                 self.log(f"响应状态码: {response.status_code}")
-                self.log(f"响应内容: {result}")
 
-                # 添加状态描述
-                biz_status_code = result.get("bizStatusCode")
-                biz_status_message = result.get("bizStatusMessage", "")
-                status_desc = self.get_status_description(biz_status_code, biz_status_message)
-                self.log(f"业务状态: {status_desc}")
-
-                # 如果收到7002错误且是第一次尝试，尝试其他签名算法
-                if biz_status_code == 7002 and attempt == 0 and len(sign_combinations) > 1:
-                    self.log(f"收到7002错误，尝试其他签名算法...")
-                    for i, alt_sign_data in enumerate(sign_combinations[1:], 1):
-                        alt_sign = hashlib.md5(alt_sign_data.encode()).hexdigest()
-                        headers["Sign"] = alt_sign
-                        self.log(f"尝试签名算法 {i}: {alt_sign_data} -> {alt_sign}")
-
-                        try:
-                            alt_response = requests.post(
-                                url,
-                                headers=headers,
-                                data=payload_json,
-                                proxies=proxies,
-                                timeout=15,
-                                verify=False
-                            )
-
-                            if alt_response.status_code == 200:
-                                alt_result = alt_response.json()
-                                alt_biz_code = alt_result.get("bizStatusCode")
-
-                                if alt_biz_code != 7002:
-                                    self.log(f"✅ 签名算法 {i} 成功！状态码: {alt_biz_code}")
-                                    return {
-                                        "success": True,
-                                        "response": alt_result,
-                                        "status_code": alt_response.status_code,
-                                        "status_description": self.get_status_description(alt_biz_code, alt_result.get("bizStatusMessage", "")),
-                                        "proxy": proxy,
-                                        "attempt": attempt + 1,
-                                        "sign_algorithm": alt_sign_data
-                                    }
-                                else:
-                                    self.log(f"❌ 签名算法 {i} 仍然7002")
-                        except Exception as e:
-                            self.log(f"❌ 签名算法 {i} 请求失败: {e}")
-                            continue
-
-                return {
-                    "success": True,
-                    "response": result,
-                    "status_code": response.status_code,
-                    "status_description": status_desc,
-                    "proxy": proxy,
-                    "attempt": attempt + 1
-                }
+                # 检查响应
+                if response.status_code == 200:
+                    try:
+                        result = response.json()
+                        self.log(f"响应内容: {result}")
+                        return {
+                            "success": True,
+                            "response": result,
+                            "status_code": response.status_code,
+                            "proxy": proxy,
+                            "attempt": attempt + 1
+                        }
+                    except:
+                        return {
+                            "success": True,
+                            "response": response.text,
+                            "status_code": response.status_code,
+                            "proxy": proxy,
+                            "attempt": attempt + 1
+                        }
+                else:
+                    self.log(f"请求失败: HTTP {response.status_code}")
 
             except Exception as e:
                 last_error = str(e)
-                self.log(f"第{attempt+1}次请求异常: {last_error}")
+                self.log(f"请求异常: {e}", "ERROR")
 
                 # 如果是代理相关错误，尝试获取新代理
                 if proxy and ("ProxyError" in str(e) or "ConnectTimeout" in str(e) or "Connection" in str(e)):
@@ -821,15 +567,11 @@ class SMSSender:
                     new_proxy = self.get_next_proxy()
                     if new_proxy and new_proxy != proxy:
                         proxy = new_proxy
-                        self.log(f"切换到新代理: {proxy}")
                         continue
 
-                # 如果是qm相关错误，增加重试间隔
-                if "qm" in str(e).lower() or "7002" in str(e):
-                    self.log(f"疑似qm参数问题，延长重试间隔...")
-                    time.sleep(2)  # qm问题时等待更长时间
-                elif attempt < retry_count - 1:
-                    time.sleep(1)  # 普通错误等待1秒
+                # 如果不是最后一次尝试，等待后重试
+                if attempt < retry_count - 1:
+                    time.sleep(1)
 
         return {
             "success": False,
@@ -838,57 +580,24 @@ class SMSSender:
             "attempts": retry_count
         }
 
-    def get_status_description(self, biz_status_code: int, biz_status_message: str = "") -> str:
-        """获取状态码描述"""
-        status_map = {
-            10000: "发送成功",
-            10703: "号码被锁定（频繁使用）",
-            7002: "发送失败（可能是Qm参数问题或请求头不匹配）",
-            # 可以添加更多状态码
-        }
-        description = status_map.get(biz_status_code, f"未知状态码: {biz_status_code}")
-        if biz_status_message:
-            description += f" - {biz_status_message}"
-        return description
-
     def is_locked(self, response_data: Dict[str, Any]) -> bool:
-        """判断号码是否被锁定（只有10703才是真正的锁号成功）"""
+        """判断是否锁号成功"""
         if not response_data.get("success"):
-            return False  # API调用失败，不算锁号
-
-        response = response_data.get("response", {})
-        biz_status_code = response.get("bizStatusCode")
-
-        # 只有10703才是真正的锁号成功
-        if biz_status_code == 10703:
-            return True
-
-        # 其他所有情况都不算锁号成功
-        return False
-
-    def is_send_failed(self, response_data: Dict[str, Any]) -> bool:
-        """判断是否发送失败（需要重试或跳过）"""
-        if not response_data.get("success"):
-            return True  # API调用失败
+            return False
 
         response = response_data.get("response", {})
         biz_status_code = response.get("bizStatusCode")
         biz_status_message = response.get("bizStatusMessage", "")
 
-        # 成功状态码
-        if biz_status_code == 10000:
-            return False
-
-        # 发送失败（7002错误等）
-        if biz_status_code == 7002:
+        # 根据抓包信息，锁号成功的标志是 bizStatusCode: 10703
+        if biz_status_code == 10703:
             return True
 
-        # 根据消息内容判断
-        error_keywords = ["操作存在异常", "请稍后再试", "发送失败", "号码异常"]
-        if any(keyword in biz_status_message for keyword in error_keywords):
+        # 也可以根据消息内容判断
+        if "操作存在异常" in biz_status_message or "请稍后再试" in biz_status_message:
             return True
 
-        return True  # 其他未知状态码也认为是失败
+        return False
 
     def process_phone_worker(self, phone: str, thread_id: int):
         """处理单个手机号的工作线程"""
@@ -911,34 +620,23 @@ class SMSSender:
                 status = "请求中..."
 
                 if result["success"]:
-                    status_desc = result.get("status_description", "")
                     response = result["response"]
-                    biz_status_code = response.get("bizStatusCode")
+                    biz_code = response.get("bizStatusCode")
+                    biz_msg = response.get("bizStatusMessage", "")
 
                     if self.is_locked(result):
-                        # 真正的锁号成功（10703）
+                        # 锁号成功
                         lock_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                         self.locked_phones[phone] = lock_time
                         status = f"锁号成功 ({lock_time})"
-                        self.log(f"[线程{thread_id}] {phone} 🎉 锁号成功！状态: {status_desc}", "SUCCESS")
+                        self.log(f"[线程{thread_id}] {phone} 锁号成功！", "SUCCESS")
 
                         # 更新表格
                         self.root.after(0, lambda: self.update_phone_status(phone, current_time, status))
                         break
-                    elif biz_status_code == 10000:
-                        # 发送成功，继续请求
-                        status = f"发送成功，继续请求 ({status_desc})"
-                        self.log(f"[线程{thread_id}] {phone} ✅ 发送成功，继续尝试锁号")
-                    elif biz_status_code == 7002:
-                        # 7002错误，需要重新获取qm参数
-                        status = f"7002错误，重新获取qm ({status_desc})"
-                        self.log(f"[线程{thread_id}] {phone} ⚠️ 7002错误，可能qm参数问题")
-                        # 可以选择跳过这个号码或者重试
-                        # time.sleep(2)  # 等待一段时间再重试
                     else:
-                        # 其他错误
-                        status = f"其他错误 ({status_desc})"
-                        self.log(f"[线程{thread_id}] {phone} ❌ 状态码: {biz_status_code}")
+                        status = f"继续请求 (状态码: {biz_code})"
+                        self.log(f"[线程{thread_id}] {phone} 响应: {biz_code} - {biz_msg}")
                 else:
                     status = f"请求失败: {result['error'][:20]}..."
                     self.log(f"[线程{thread_id}] {phone} 请求失败: {result['error']}", "ERROR")
@@ -1224,4 +922,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
